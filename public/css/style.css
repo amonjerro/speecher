@@ -1,0 +1,30 @@
+.results{
+	margin-top:5px;
+	margin-bottom:5px;
+	border: 1px solid #ccc;
+	border-radius:5px;
+	padding:5px;
+	min-height:20px;
+}
+@keyframes recording{
+	from {background-color:#770000 ;}
+	to {background-color:#dd3333;}
+}
+.recorder{
+	color:000;
+}
+.recording{
+	color: #fff;
+	border-color:#cc0000;
+	animation-name: recording;
+	animation-duration: 1s;
+	animation-timing-function: linear;
+	animation-direction:alternate;
+	animation-iteration-count:infinite;
+}
+.recorder:active,.recorder:active:focus,.recorder:focus{
+	outline:none;
+}
+.recorder.recording{
+	color:#fff;
+}

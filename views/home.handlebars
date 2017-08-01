@@ -1,0 +1,80 @@
+<div class="page-header">
+	<h3>Speech To Text - Concept Test</h3>
+</div>
+<div id="main">
+	<div>
+		<button class="btn btn-default recorder"><span class="glyphicon glyphicon-bullhorn"></span></button>
+	</div>
+	<div class="info">
+		
+	</div>
+	<div class="results">
+		
+	</div>
+</div>
+<script>
+	var info = {
+		'running': 'We are recording your speech',
+		'waiting': 'Click the button to begin recording your speech',
+		'error': 'There was an error with the application, we\'re very sorry',
+		'blank': 'We recorded nothing'
+	}
+	var final_transcript = '';
+	var recognizing = false;
+	var ignore_end;
+	if (!'webkitSpeechRecognition' in window){
+		$('#main').html('Esta aplicación sólo está habilitada para browsers que permitan grabación de audio.')
+	} else {
+		var recognition = new webkitSpeechRecognition();
+		recognition.continous = true;
+		recognition.lang = 'es-PE';
+
+		recognition.onstart = function(){
+			console.log('Recognition is taking place, my dude')
+		};
+
+		recognition.onend = function(){
+			if(!ignore_end){
+				$('.results').html(final_transcript);
+				$('.recording').removeClass('recording');
+				console.log('Recognition is done');
+				if (final_transcript == ''){
+					$('.info').html(showInfo('blank'));
+				}
+				return;
+			} else {
+				recognition.start();
+				if (final_transcript == ''){
+					$('.info').html(showInfo('blank'));
+					return;
+				}
+			}
+		}
+		recognition.onresult = function(event){
+			console.log(event.results);
+			for (var i = event.resultIndex; i < event.results.length; i++){
+				if(event.results[i].isFinal){
+					final_transcript += event.results[i][0].transcript;
+				}
+			}
+		};
+	}
+
+	function showInfo(s){
+		$('.info').html(info[s]);
+	}
+	$('.recorder').click(function(){
+		if (recognizing){
+			ignore_end = false;
+			recognizing = false;
+			recognition.stop()
+			return;
+		}
+		ignore_end = true;
+		$(this).addClass('recording')
+		final_transcript = '';
+		recognition.start();
+		recognizing = true;
+		$('.info').html(showInfo('running'));
+	})
+</script>
