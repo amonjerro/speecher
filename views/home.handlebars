@@ -1,15 +1,15 @@
 <div class="page-header">
-	<h3>Speech To Text - Concept Test</h3>
+	<h3>{{question}}</h3>
 </div>
 <div id="main">
 	<div>
-		<button class="btn btn-default recorder"><span class="glyphicon glyphicon-bullhorn"></span></button>
+		<button class="btn btn-default recorder"><span class="glyphicon glyphicon-play"></span></button>
 	</div>
 	<div class="info">
 		
 	</div>
 	<div class="results">
-		
+		<textarea name="" id="" cols="30" rows="10" class="results-container"></textarea>
 	</div>
 </div>
 <script>
@@ -17,32 +17,39 @@
 		'running': 'We are recording your speech',
 		'waiting': 'Click the button to begin recording your speech',
 		'error': 'There was an error with the application, we\'re very sorry',
-		'blank': 'We recorded nothing'
+		'blank': 'Nothing was recorded',
+		'conteo': 'Palabras totales: '
 	}
 	var final_transcript = '';
+	var interim_transcript = '';
 	var recognizing = false;
 	var ignore_end;
+	var recorded = false;
 	if (!'webkitSpeechRecognition' in window){
 		$('#main').html('Esta aplicación sólo está habilitada para browsers que permitan grabación de audio.')
 	} else {
 		var recognition = new webkitSpeechRecognition();
 		recognition.continous = true;
 		recognition.lang = 'es-PE';
+		recognition.interimResults = true;
 
 		recognition.onstart = function(){
-			console.log('Recognition is taking place, my dude')
 		};
 
 		recognition.onend = function(){
 			if(!ignore_end){
-				$('.results').html(final_transcript);
+				$('.results-container').val(final_transcript);
 				$('.recording').removeClass('recording');
-				console.log('Recognition is done');
 				if (final_transcript == ''){
 					$('.info').html(showInfo('blank'));
+				} else {
+					var conteo_de_palabras = $('.results-container').val().split(' ')
+					$('.info').html(showInfo('conteo'));
+					$('.info').append(conteo_de_palabras.length - 1)
 				}
 				return;
 			} else {
+				interim_transcript = $('.results-container').val();
 				recognition.start();
 				if (final_transcript == ''){
 					$('.info').html(showInfo('blank'));
@@ -51,10 +58,14 @@
 			}
 		}
 		recognition.onresult = function(event){
-			console.log(event.results);
+			var internal_interim = '';
 			for (var i = event.resultIndex; i < event.results.length; i++){
 				if(event.results[i].isFinal){
-					final_transcript += event.results[i][0].transcript;
+					final_transcript += ' '+event.results[i][0].transcript;
+					interim_transcript += ' '+event.results[i][0].transcript;
+				} else {
+					internal_interim += ' '+event.results[i][0].transcript;
+					$('.results-container').val(interim_transcript + internal_interim);
 				}
 			}
 		};
@@ -65,16 +76,27 @@
 	}
 	$('.recorder').click(function(){
 		if (recognizing){
+			$(this).children('.glyphicon').removeClass('glyphicon-pause').addClass('glyphicon-play');
 			ignore_end = false;
 			recognizing = false;
+			recorded = true;
+			$('.results-container').prop('disabled',false)
 			recognition.stop()
 			return;
 		}
+		$('.results-container').prop('disabled',true)
 		ignore_end = true;
 		$(this).addClass('recording')
-		final_transcript = '';
+		$(this).children('.glyphicon').removeClass('.glyphicon-play').addClass('glyphicon-pause')
 		recognition.start();
 		recognizing = true;
 		$('.info').html(showInfo('running'));
+	})
+	$('.results-container').blur(function(){
+		var conteo_de_palabras = $('.results-container').val().split(' ')
+		$('.info').html(showInfo('conteo'));
+		$('.info').append(conteo_de_palabras.length - 1);
+		final_transcript = $('.results-container').val();
+		interim_transcript = $('.results-container').val();
 	})
 </script>

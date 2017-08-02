@@ -1,0 +1,26 @@
+<div class="card login clearfix">
+	<div class="form-group col-sm-12">	
+		<label for="" class="control-label">Usuario</label>
+		<input type="text" class="form-control" name="dni" id="dni" value="">
+	</div>
+	<div class="form-group col-sm-12">	
+		<label for="" class="control-label">Password</label>
+		<input type="password" class="form-control" name="pw" id="pw">
+	</div>
+	<div class="form-group col-sm-12 centered">
+		<input type="hidden" name="token" value="{{token}}" id="token">
+		<button class="btn btn-primary">Go</button>
+	</div>
+	<script>
+		$('.btn').click(function(){
+			$.post('/login',
+			{
+				id:$('#dni').val(),
+				token:$('#token').val()
+			},
+			function(data){
+				console.log(data)
+			})
+		})
+	</script>
+</div>
