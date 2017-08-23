@@ -4,32 +4,55 @@ const saltRounds = 10;
 
 function Users(){
 	this.db =  require('../kernel/db.js');
-	this.table = db.get('users');
+	this.table = this.db.get('users');
 }
 
 Users.prototype.new = function(params){
-	var db = this.db;
-	this.hash_password(params.password).then(function(hash){
-		params.password = hash;
-		db.insert{params}
-		return true;
+	var db = this;
+	return new Promise(function(resolve, reject){
+		db.hash_password(params.password).then(function(hash){
+			params.password = hash;
+			db.table.insert(params);
+			return resolve();
+		})
+	})
+}
+
+Users.prototype.exists = function(id){
+	var db = this;
+	return new Promise(function(resolve, reject){
+		db.table.find({'id':id}).then(function(value){
+			resolve(value.length > 0);
+		})
+	})
+}
+
+Users.prototype.list = function(){
+	var db = this;
+	return new Promise(function(resolve, reject){
+		db.table.find({},'-password').then(function(values){
+			resolve(values);
+		})
 	})
 }
 
 Users.prototype.login = function(id,password){
 	var obj = this;
 	return new Promise(function(resolve, reject){
-		this.db.find({id:id}).then(function(object){
+		obj.table.find({'id':id}).then(function(object){
 			var returnable;
-			obj.verify_password(password,object.password).then(function(){
+			obj.verify_password(password,object[0].password).then(function(){
 				returnable = {
-					id:object.id,
-					group:object.group
+					id:object[0].id,
+					group:object[0].group,
+					username:object[0].username
 				}
 				return resolve(returnable);
-			}).catch(function(){
-				return reject();
+			}).catch(function(error){
+				return reject(error);
 			})
+		}).catch(function(){
+			return reject({ok:false,message:'Incorrect login credentials'})
 		})
 	})
 }
@@ -46,10 +69,12 @@ Users.prototype.verify_password = function(string,hash){
 	return new Promise(function(resolve, reject){
 		bcrypt.compare(string,hash).then(function(value){
 			if(value){
-				return resolve();
+				return resolve(value);
 			} else {
-				return reject();
+				return reject(value);
 			}
+		}).catch(function(error){
+			return reject(error);
 		})
 	})
 }

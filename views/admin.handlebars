@@ -1,3 +1,103 @@
-<div>
-	
+<div class="modal fade" tabindex="-1" role="dialog" id="adminModal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+    </div>
+  </div>
 </div>
+<div class="page-header">
+	<h4>Bienvenido - {{username}}</h4>
+</div>
+<nav class="navbar navbar-default">
+	<div class="container-fluid">
+
+	    <div class="navbar-header">
+	      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main_nav" aria-expanded="false">
+	        <span class="sr-only">Toggle navigation</span>
+	        <span class="icon-bar"></span>
+	        <span class="icon-bar"></span>
+	        <span class="icon-bar"></span>
+	      </button>
+	      <a class="navbar-brand" href="#"><img src="img/logo.png" alt="Watson" title="Watson" class="brand"></a>
+	    </div>
+	    <div class="collapse navbar-collapse" id="main_nav">
+	    	<ul class="nav navbar-nav">
+	    		<li><a href="#reporte" data-toggle="tab">Reporte</a></li>
+	    		<li class="active"><a href="#usuarios" data-toggle="tab">Usuarios</a></li>
+	    		<li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span></a></li>
+	    	</ul>
+	    </div>
+	</div>
+</nav>
+<div class="tab-content col-sm-12">
+	<div id="reporte" class="tab-pane fade">
+		<p>Hola Amigos</p>
+	</div>
+	<div id="usuarios" class="tab-pane fade in active">
+		<div class="col-sm-12 card">
+			<div class="form-group col-sm-6">	
+				<label for="" class="control-label">Usuario</label>
+				<input type="text" class="form-control" name="dni" id="dni" value="">
+			</div>
+			<div class="form-group col-sm-6">	
+				<label for="" class="control-label">Password</label>
+				<input type="password" class="form-control" name="pw" id="pw">
+			</div>
+			<div class="col-sm-6 form-group">
+				<label for="" class="control-label">Nombre</label>
+				<input type="text" class="form-control" name="username" id="username" value="">
+			</div>
+			<div class="col-sm-6 form-group">
+				<label for="" class="control-label">Group</label>
+				<select name="group" id="group" class="form-control">
+					<option value="user">User</option>
+					<option value="admin">Administrator</option>
+				</select>
+			</div>
+			<div class="form-group col-sm-12 centered">
+				<input type="hidden" name="token" value="{{token}}" id="token">
+				<button class="btn btn-primary" id="save_user">Go</button>
+			</div>
+		</div>
+		<div class="col-sm-12 card">
+			<ul class="user-list clearfix">
+				
+			</ul>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	$(document).ready(function(){
+		$.get('/report',function(data){
+			console.log(data);
+		})
+		$.get('/admin/user/list?token='+$('#token').val(),function(data){
+			console.log(data)
+			if(data.ok){
+				var appendable_text = '';
+				for (var i = 0; i < data.users.length; i++){
+					if (i%2 == 0){
+						appendable_text += '<li class="user clearfix even"><div class="col-sm-6"><h4>'+data.users[i].username+' - '+data.users[i].group+'</h4></div><div class="col-sm-6"><button class="btn btn-danger pull-right"><span class="glyphicon glyphicon-trash"></span></button></div></li>'
+					} else {
+						appendable_text += '<li class="user clearfix odd"><div class="col-sm-6"><h4>'+data.users[i].username+' - '+data.users[i].group+'</h4></div><div class="col-sm-6"><button class="btn btn-danger pull-right"><span class="glyphicon glyphicon-trash"></span></button></div></li>'
+					}
+				}
+				$('.user-list').append(appendable_text);
+			}
+		})
+		$('#save_user').click(function(){
+			var but = $(this);
+			$(but).prop('disable',true);
+			$.post('/admin/user/new', {
+				username:$('#username').val(),
+				password:$('#pw').val(),
+				id:$('#dni').val(),
+				group:$('#group').val(),
+				token:$('#token').val()
+			},function(data){
+				$(but).prop('disable',false);
+				$('.modal-content').html(data);
+				$('#adminModal').modal('show');
+			})
+		})
+	})
+</script>

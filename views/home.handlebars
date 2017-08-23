@@ -1,23 +1,39 @@
+<div class="modal fade" tabindex="-1" role="dialog" id="questionModal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
 <div class="page-header">
-	<h3>{{question}}</h3>
+	<a href="/logout" class="pull-right header-link"><span class="glyphicon glyphicon-log-out"></span></a>
+	<h3>{{questionId}}. {{question}}</h3>
 </div>
 <div id="main">
 	<div>
-		<button class="btn btn-default recorder"><span class="glyphicon glyphicon-play"></span></button>
+		<button class="btn btn-default recorder"><span class="glyphicon glyphicon-record"></span></button>
 	</div>
 	<div class="info">
 		
 	</div>
 	<div class="results">
-		<textarea name="" id="" cols="30" rows="10" class="results-container"></textarea>
+		<textarea name="content" id="content" cols="30" rows="10" class="results-container">{{value}}</textarea>
+	</div>
+	<div class="centered">
+		{{#if previous}}
+		<a href="/user/{{userID}}/question/{{previous}}" class="btn btn-success" title="Anterior"><span class="glyphicon glyphicon-arrow-left"></span></a>
+		{{/if}}
+		<button class="btn btn-primary" id="procesar">Procesar</button>
+		{{#if next}}
+		<a href="/user/{{userID}}/question/{{next}}" class="btn btn-success" title="Siguiente"><span class="glyphicon glyphicon-arrow-right"></span></a>
+		{{/if}}
 	</div>
 </div>
 <script>
 	var info = {
-		'running': 'We are recording your speech',
-		'waiting': 'Click the button to begin recording your speech',
-		'error': 'There was an error with the application, we\'re very sorry',
-		'blank': 'Nothing was recorded',
+		'running': 'Estamos grabando lo que dices',
+		'waiting': 'Hazle click al boton para grabar lo que dices',
+		'error': 'Hubo un error con la aplicación, pedimos disculpas.',
+		'blank': 'No se grabó nada',
 		'conteo': 'Palabras totales: '
 	}
 	var final_transcript = '';
@@ -76,7 +92,7 @@
 	}
 	$('.recorder').click(function(){
 		if (recognizing){
-			$(this).children('.glyphicon').removeClass('glyphicon-pause').addClass('glyphicon-play');
+			$(this).children('.glyphicon').removeClass('glyphicon-pause').addClass('glyphicon-record');
 			ignore_end = false;
 			recognizing = false;
 			recorded = true;
@@ -87,7 +103,7 @@
 		$('.results-container').prop('disabled',true)
 		ignore_end = true;
 		$(this).addClass('recording')
-		$(this).children('.glyphicon').removeClass('.glyphicon-play').addClass('glyphicon-pause')
+		$(this).children('.glyphicon').removeClass('glyphicon-record').addClass('glyphicon-pause')
 		recognition.start();
 		recognizing = true;
 		$('.info').html(showInfo('running'));
@@ -98,5 +114,17 @@
 		$('.info').append(conteo_de_palabras.length - 1);
 		final_transcript = $('.results-container').val();
 		interim_transcript = $('.results-container').val();
+	})
+	$('#procesar').click(function(){
+		var but = $(this);
+		$(but).prop('disable',true);
+		$.post('/send',{
+			content:$('#content').val()
+		},function(data){
+			console.log(data);
+			$(but).prop('disable',false);
+			$('.modal-content').html(data);
+			$('#questionModal').modal('show');
+		})
 	})
 </script>

@@ -16,10 +16,13 @@
 			$.post('/login',
 			{
 				id:$('#dni').val(),
+				password:$('#pw').val(),
 				token:$('#token').val()
 			},
 			function(data){
-				console.log(data)
+				if(data.ok){
+					document.location = data.url
+				}	
 			})
 		})
 	</script>

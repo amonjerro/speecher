@@ -1,4 +1,4 @@
 require('dotenv').config()
-var mongodb = require('monk')('localhost:'+process.env.MDB_PORT+'/'+process.env.MDB_DB);
+var mongodb = require('monk')('localhost:'+process.env.MPORT+'/'+process.env.MDB);
 
 module.exports = mongodb;
